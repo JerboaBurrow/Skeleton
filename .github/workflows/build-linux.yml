@@ -1,0 +1,55 @@
+name: Linux build
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - 'doc/**'
+      - '.github/**'
+      - '*.md'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+
+  linuxNative:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y xorg-dev build-essential mesa-common-dev libx11-dev libxrandr-dev libgl1-mesa-dev libglu1-mesa-dev libfreetype6-dev libopenal-dev libsndfile1-dev libudev-dev libxinerama-dev libxcursor-dev vulkan-tools libvulkan-dev vulkan-validationlayers-dev spirv-tools xvfb x11-apps imagemagick
+
+    - name: get hop
+      run: ./getLibs.sh
+
+    - name: linux native build
+      run: |
+        source version.sh
+        ./build.sh -r
+        mkdir linuxbuild
+        cp build/Stellar/Stellar linuxbuild/
+        mv build/Stellar/res linuxbuild/
+        cp LICENSE linuxbuild/
+        cp LICENSE linuxbuild/
+        cp LICENSES.md linuxbuild/
+        cp README.md linuxbuild/
+
+    - name: sign build
+      run: |
+        export GPG_TTY=$(tty)  
+        echo "${{ secrets.GPG_KEY }}" > priv
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" --import priv
+        rm priv
+
+        cd linuxbuild
+        md5sum Stellar > Stellar.md5
+
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b Stellar
+
+    - name: buildArtifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Stellar-linux-x86_64
+        path: linuxbuild

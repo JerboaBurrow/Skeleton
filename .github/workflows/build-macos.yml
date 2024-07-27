@@ -1,0 +1,90 @@
+name: macOS build
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - 'doc/**'
+      - '.github/**'
+      - '*.md'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+
+  macosNative:
+    runs-on: macos-11
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+          wget https://sdk.lunarg.com/sdk/download/latest/mac/vulkan-sdk.dmg
+          hdiutil attach vulkan-sdk.dmg -mountpoint /Volumes/vulkan-sdk
+          mkdir ~/vulkan
+          cd /Volumes/vulkan-sdk/
+          sudo ./InstallVulkan.app/Contents/macOS/InstallVulkan --root ~/vulkan --accept-licenses --default-answer --confirm-command install
+          ls ~/vulkan
+          cd ~/vulkan/
+          python install_vulkan.py
+          brew install md5sha1sum svg2png 
+
+    - name: get hop
+      run: ./getLibs.sh
+
+    - name: macos native build
+      run: |
+        source version.sh
+        ./build.sh -r -o
+        mkdir macosbuild
+        cp build/Stellar/Stellar macosbuild/
+        mv build/Stellar/res macosbuild/
+
+    - name: sign build
+      run: |
+        export GPG_TTY=$(tty)  
+        echo "${{ secrets.GPG_KEY }}" > priv
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" --import priv
+        rm priv
+
+        cd macosbuild
+        md5sum Stellar > Stellar.md5
+
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b Stellar
+        cd 
+
+    - name: create .app bundle
+      run: |
+        source version.sh
+        mkdir Stellar.app
+        mkdir Stellar.app/Contents
+        mkdir Stellar.app/Contents/Resources
+        mkdir Stellar.app/Contents/MacOS
+        cp macosbuild/Stellar Stellar.app/Contents/MacOS
+        cp -r macosbuild/res Stellar.app/Contents/Resources
+        cp macosbuild/*.sig Stellar.app/Contents/Resources
+        cp macosbuild/*.md5 Stellar.app/Contents/Resources
+        cp LICENSE Stellar.app/Contents/Resources
+        cp LICENSES.md Stellar.app/Contents/Resources
+        cp README.md Stellar.app/Contents/Resources
+
+        cp common/macos/icon.icns Stellar.app/Contents/Resources/icons.icns
+        cp common/macos/Info.plist Stellar.app/Contents/
+
+        source common/replace.sh Stellar.app/Contents/Info.plist INFO_STRING "Stellar (C) Jerboa - GPLv3"
+        source common/replace.sh Stellar.app/Contents/Info.plist EXE Stellar
+        source common/replace.sh Stellar.app/Contents/Info.plist ID app.jerboa.Stellar
+        source common/replace.sh Stellar.app/Contents/Info.plist NAME Stellar
+        source common/replace.sh Stellar.app/Contents/Info.plist VERSION "$PRODUCT-$MAJOR.$MINOR.$PATCH"
+        rm Stellar.app/Contents/Info.plist-e
+
+        mkdir pkg
+        cp -r Stellar.app pkg/
+        cd
+
+    - name: buildArtifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Stellar-macos
+        path: pkg

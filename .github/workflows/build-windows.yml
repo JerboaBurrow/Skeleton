@@ -1,0 +1,56 @@
+name: Windows build
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - 'doc/**'
+      - '.github/**'
+      - '*.md'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+
+  linuxXwindows:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install -y xorg-dev build-essential mesa-common-dev libx11-dev libxrandr-dev libgl1-mesa-dev libglu1-mesa-dev libfreetype6-dev libopenal-dev libsndfile1-dev libudev-dev g++-mingw-w64-x86-64-posix gcc-mingw-w64-x86-64-posix libz-mingw-w64-dev mingw-w64-common libxinerama-dev libxcursor-dev vulkan-tools libvulkan-dev vulkan-validationlayers-dev spirv-tools wine64
+           
+    - name: get hop
+      run: ./getLibs.sh
+
+    - name: windows mingw build
+      run: |
+        source version.sh
+        ./build.sh -r -w
+        mkdir windowsbuild
+        cp build/Stellar/Stellar.exe windowsbuild/
+        mv build/Stellar/res windowsbuild/
+        cp build/*.dll windowsbuild/
+        cp LICENSE windowsbuild/
+        cp LICENSES.md windowsbuild/
+        cp README.md windowsbuild/
+
+    - name: sign build
+      run: |
+        export GPG_TTY=$(tty)  
+        echo "${{ secrets.GPG_KEY }}" > priv
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" --import priv
+        rm priv
+        
+        cd windowsbuild
+        md5sum Stellar.exe > Stellar.exe.md5
+
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b Stellar.exe
+
+    - name: buildArtifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Stellar-windows
+        path: windowsbuild
