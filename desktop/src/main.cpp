@@ -54,7 +54,6 @@ int main(int argv, char ** argc)
     double delta = 0.0;
 
     float theta = 0.0f;
-    float scale = 0.0f;
 
     while (display.isOpen())
     {
@@ -65,7 +64,6 @@ int main(int argv, char ** argc)
             jGLInstance->clear();
 
             theta += 1.0/60.0 * 0.1;
-            scale = 0.1*std::abs(std::sin(theta))+0.05;
 
             sprites->getSprite("sHeart").update(jGL::Transform(0.5f, 0.5f, theta, 0.1f));
 
