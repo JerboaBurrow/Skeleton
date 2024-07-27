@@ -203,9 +203,11 @@ jobs:
       run: |
         export GPG_TTY=$(tty)  
         cd android
+        echo "${{ secrets.GPG_KEY }}" > priv
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" --import priv
+        rm priv
         echo "${{ secrets.KEYSTORE }}" > $PROJECT.jks.asc
-        gpg --pinentry-mode=loopback -d --passphrase "${{ secrets.PASS }}" $PROJECT.jks.asc > $PROJECT.jks
-        rm $PROJECT.prop
+        gpg --pinentry-mode=loopback -d --passphrase "${{ secrets.GPG_PASS }}" $PROJECT.jks.asc > $PROJECT.jks
         echo "storePassword=${{ secrets.PASS }}" > $PROJECT.prop
         echo "keyPassword=${{ secrets.PASS }}" >> $PROJECT.prop
         echo "storeFile=../$PROJECT.jks" >> $PROJECT.prop

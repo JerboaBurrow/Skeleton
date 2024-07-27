@@ -4,7 +4,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
-def propsFile = rootProject.file('app.prop')
+def propsFile = rootProject.file('jerboa.prop')
 def props = new Properties()
 props.load(new FileInputStream(propsFile))
 
