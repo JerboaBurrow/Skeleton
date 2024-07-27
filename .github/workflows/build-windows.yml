@@ -1,5 +1,8 @@
 name: Windows build
 
+env:
+  PROJECT: Jerboa
+
 on:
   push:
     branches: [ "main" ]
@@ -30,8 +33,8 @@ jobs:
         source version.sh
         ./build.sh -r -w
         mkdir windowsbuild
-        cp build/Stellar/Stellar.exe windowsbuild/
-        mv build/Stellar/res windowsbuild/
+        cp build/$PROJECT/$PROJECT.exe windowsbuild/
+        mv build/$PROJECT/res windowsbuild/
         cp build/*.dll windowsbuild/
         cp LICENSE windowsbuild/
         cp LICENSES.md windowsbuild/
@@ -45,12 +48,12 @@ jobs:
         rm priv
         
         cd windowsbuild
-        md5sum Stellar.exe > Stellar.exe.md5
+        md5sum $PROJECT.exe > $PROJECT.exe.md5
 
-        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b Stellar.exe
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b $PROJECT.exe
 
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: Stellar-windows
+        name: $PROJECT-windows
         path: windowsbuild

@@ -1,5 +1,8 @@
 name: Linux build
 
+env:
+  PROJECT: Jerboa
+
 on:
   push:
     branches: [ "main" ]
@@ -29,8 +32,8 @@ jobs:
         source version.sh
         ./build.sh -r
         mkdir linuxbuild
-        cp build/Stellar/Stellar linuxbuild/
-        mv build/Stellar/res linuxbuild/
+        cp build/$PROJECT/$PROJECT linuxbuild/
+        mv build/$PROJECT/res linuxbuild/
         cp LICENSE linuxbuild/
         cp LICENSE linuxbuild/
         cp LICENSES.md linuxbuild/
@@ -44,12 +47,12 @@ jobs:
         rm priv
 
         cd linuxbuild
-        md5sum Stellar > Stellar.md5
+        md5sum $PROJECT > $PROJECT.md5
 
-        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b Stellar
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b $PROJECT
 
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: Stellar-linux-x86_64
+        name: $PROJECT-linux-x86_64
         path: linuxbuild

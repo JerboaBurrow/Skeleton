@@ -1,5 +1,8 @@
 name: Android build
 
+env:
+  PROJECT: Jerboa
+
 on:
   push:
     branches: [ "main" ]
@@ -44,13 +47,12 @@ jobs:
       run: |
         export GPG_TTY=$(tty)  
         cd android
-        echo "${{ secrets.KEYSTORE }}" > Stellar.jks.asc
-        gpg --pinentry-mode=loopback -d --passphrase "${{ secrets.PASS }}" Stellar.jks.asc > Stellar.jks
-        rm Stellar.prop
-        echo "storePassword=${{ secrets.PASS }}" > Stellar.prop
-        echo "keyPassword=${{ secrets.PASS }}" >> Stellar.prop
-        echo "storeFile=../Stellar.jks" >> Stellar.prop
-        echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> Stellar.prop
+        echo "${{ secrets.KEYSTORE }}" > $PROJECT.jks.asc
+        gpg --pinentry-mode=loopback -d --passphrase "${{ secrets.PASS }}" $PROJECT.jks.asc > $PROJECT.jks
+        echo "storePassword=${{ secrets.PASS }}" > $PROJECT.prop
+        echo "keyPassword=${{ secrets.PASS }}" >> $PROJECT.prop
+        echo "storeFile=../$PROJECT.jks" >> $PROJECT.prop
+        echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> $PROJECT.prop
         cd ..
 
     - name: android build
@@ -62,14 +64,14 @@ jobs:
         ./gradlew bundleRelease
         cd ..
         mkdir androidbuild
-        cp android/app/build/outputs/bundle/release/app-release.aab androidbuild/Stellar.aab
+        cp android/app/build/outputs/bundle/release/app-release.aab androidbuild/$PROJECT.aab
         cp LICENSE androidbuild/
         cp LICENSES.md androidbuild/
         cp README.md androidbuild/ 
-        rm android/Stellar.prop
+        rm android/$PROJECT.prop
 
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: Stellar-android
+        name: $PROJECT-android
         path: androidbuild

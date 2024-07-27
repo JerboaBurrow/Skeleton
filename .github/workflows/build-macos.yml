@@ -1,5 +1,8 @@
 name: macOS build
 
+env:
+  PROJECT: Jerboa
+
 on:
   push:
     branches: [ "main" ]
@@ -38,8 +41,8 @@ jobs:
         source version.sh
         ./build.sh -r -o
         mkdir macosbuild
-        cp build/Stellar/Stellar macosbuild/
-        mv build/Stellar/res macosbuild/
+        cp build/$PROJECT/$PROJECT macosbuild/
+        mv build/$PROJECT/res macosbuild/
 
     - name: sign build
       run: |
@@ -49,42 +52,42 @@ jobs:
         rm priv
 
         cd macosbuild
-        md5sum Stellar > Stellar.md5
+        md5sum $PROJECT > $PROJECT.md5
 
-        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b Stellar
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b $PROJECT
         cd 
 
     - name: create .app bundle
       run: |
         source version.sh
-        mkdir Stellar.app
-        mkdir Stellar.app/Contents
-        mkdir Stellar.app/Contents/Resources
-        mkdir Stellar.app/Contents/MacOS
-        cp macosbuild/Stellar Stellar.app/Contents/MacOS
-        cp -r macosbuild/res Stellar.app/Contents/Resources
-        cp macosbuild/*.sig Stellar.app/Contents/Resources
-        cp macosbuild/*.md5 Stellar.app/Contents/Resources
-        cp LICENSE Stellar.app/Contents/Resources
-        cp LICENSES.md Stellar.app/Contents/Resources
-        cp README.md Stellar.app/Contents/Resources
+        mkdir $PROJECT.app
+        mkdir $PROJECT.app/Contents
+        mkdir $PROJECT.app/Contents/Resources
+        mkdir $PROJECT.app/Contents/MacOS
+        cp macosbuild/$PROJECT $PROJECT.app/Contents/MacOS
+        cp -r macosbuild/res $PROJECT.app/Contents/Resources
+        cp macosbuild/*.sig $PROJECT.app/Contents/Resources
+        cp macosbuild/*.md5 $PROJECT.app/Contents/Resources
+        cp LICENSE $PROJECT.app/Contents/Resources
+        cp LICENSES.md $PROJECT.app/Contents/Resources
+        cp README.md $PROJECT.app/Contents/Resources
 
-        cp common/macos/icon.icns Stellar.app/Contents/Resources/icons.icns
-        cp common/macos/Info.plist Stellar.app/Contents/
+        cp common/macos/icon.icns $PROJECT.app/Contents/Resources/icons.icns
+        cp common/macos/Info.plist $PROJECT.app/Contents/
 
-        source common/replace.sh Stellar.app/Contents/Info.plist INFO_STRING "Stellar (C) Jerboa - GPLv3"
-        source common/replace.sh Stellar.app/Contents/Info.plist EXE Stellar
-        source common/replace.sh Stellar.app/Contents/Info.plist ID app.jerboa.Stellar
-        source common/replace.sh Stellar.app/Contents/Info.plist NAME Stellar
-        source common/replace.sh Stellar.app/Contents/Info.plist VERSION "$PRODUCT-$MAJOR.$MINOR.$PATCH"
-        rm Stellar.app/Contents/Info.plist-e
+        source common/replace.sh $PROJECT.app/Contents/Info.plist INFO_STRING "$PROJECT (C) Jerboa - GPLv3"
+        source common/replace.sh $PROJECT.app/Contents/Info.plist EXE $PROJECT
+        source common/replace.sh $PROJECT.app/Contents/Info.plist ID app.jerboa.$PROJECT
+        source common/replace.sh $PROJECT.app/Contents/Info.plist NAME $PROJECT
+        source common/replace.sh $PROJECT.app/Contents/Info.plist VERSION "$PRODUCT-$MAJOR.$MINOR.$PATCH"
+        rm $PROJECT.app/Contents/Info.plist-e
 
         mkdir pkg
-        cp -r Stellar.app pkg/
+        cp -r $PROJECT.app pkg/
         cd
 
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: Stellar-macos
+        name: $PROJECT-macos
         path: pkg

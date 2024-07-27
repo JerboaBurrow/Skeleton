@@ -1,5 +1,8 @@
 name: Release
 
+env:
+  PROJECT: Jerboa
+
 on:
   push:
     tags:     'v*'
@@ -24,8 +27,8 @@ jobs:
         source version.sh
         ./build.sh -r
         mkdir linuxbuild
-        cp build/Stellar/Stellar linuxbuild/
-        mv build/Stellar/res linuxbuild/
+        cp build/$PROJECT/$PROJECT linuxbuild/
+        mv build/$PROJECT/res linuxbuild/
         cp LICENSE linuxbuild/
         cp LICENSES.md linuxbuild/
         cp README.md linuxbuild/
@@ -38,14 +41,14 @@ jobs:
         rm priv
 
         cd linuxbuild
-        md5sum Stellar > Stellar.md5
+        md5sum $PROJECT > $PROJECT.md5
 
-        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b Stellar
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b $PROJECT
 
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: Stellar-linux-x86_64
+        name: $PROJECT-linux-x86_64
         path: linuxbuild
 
   linuxXwindows:
@@ -66,8 +69,8 @@ jobs:
         source version.sh
         ./build.sh -r -w
         mkdir windowsbuild
-        cp build/Stellar/Stellar.exe windowsbuild/
-        mv build/Stellar/res windowsbuild/
+        cp build/$PROJECT/$PROJECT.exe windowsbuild/
+        mv build/$PROJECT/res windowsbuild/
         cp build/libwinpthread* windowsbuild/
         cp LICENSE windowsbuild/
         cp LICENSES.md windowsbuild/
@@ -81,14 +84,14 @@ jobs:
         rm priv
         
         cd windowsbuild
-        md5sum Stellar.exe > Stellar.exe.md5
+        md5sum $PROJECT.exe > $PROJECT.exe.md5
 
-        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b Stellar.exe
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b $PROJECT.exe
 
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: Stellar-windows
+        name: $PROJECT-windows
         path: windowsbuild
 
   macosNative:
@@ -117,8 +120,8 @@ jobs:
         source version.sh
         ./build.sh -r -o
         mkdir macosbuild
-        cp build/Stellar/Stellar macosbuild/
-        mv build/Stellar/res macosbuild/
+        cp build/$PROJECT/$PROJECT macosbuild/
+        mv build/$PROJECT/res macosbuild/
 
     - name: sign build
       run: |
@@ -128,44 +131,44 @@ jobs:
         rm priv
 
         cd macosbuild
-        md5sum Stellar > Stellar.md5
+        md5sum $PROJECT > $PROJECT.md5
 
-        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b Stellar
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b $PROJECT
         cd 
 
     - name: create .app bundle
       run: |
         source version.sh
-        mkdir Stellar.app
-        mkdir Stellar.app/Contents
-        mkdir Stellar.app/Contents/Resources
-        mkdir Stellar.app/Contents/MacOS
-        cp macosbuild/Stellar Stellar.app/Contents/MacOS
-        cp -r macosbuild/res Stellar.app/Contents/Resources
-        cp macosbuild/*.sig Stellar.app/Contents/Resources
-        cp macosbuild/*.md5 Stellar.app/Contents/Resources
-        cp LICENSE Stellar.app/Contents/Resources
-        cp LICENSES.md Stellar.app/Contents/Resources
-        cp README.md Stellar.app/Contents/Resources
+        mkdir $PROJECT.app
+        mkdir $PROJECT.app/Contents
+        mkdir $PROJECT.app/Contents/Resources
+        mkdir $PROJECT.app/Contents/MacOS
+        cp macosbuild/$PROJECT $PROJECT.app/Contents/MacOS
+        cp -r macosbuild/res $PROJECT.app/Contents/Resources
+        cp macosbuild/*.sig $PROJECT.app/Contents/Resources
+        cp macosbuild/*.md5 $PROJECT.app/Contents/Resources
+        cp LICENSE $PROJECT.app/Contents/Resources
+        cp LICENSES.md $PROJECT.app/Contents/Resources
+        cp README.md $PROJECT.app/Contents/Resources
         
-        cp common/macos/icon.icns Stellar.app/Contents/Resources/icons.icns
-        cp common/macos/Info.plist Stellar.app/Contents/
+        cp common/macos/icon.icns $PROJECT.app/Contents/Resources/icons.icns
+        cp common/macos/Info.plist $PROJECT.app/Contents/
 
-        source common/replace.sh Stellar.app/Contents/Info.plist INFO_STRING "Stellar (C) Jerboa - GPLv3"
-        source common/replace.sh Stellar.app/Contents/Info.plist EXE Stellar
-        source common/replace.sh Stellar.app/Contents/Info.plist ID app.jerboa.Stellar
-        source common/replace.sh Stellar.app/Contents/Info.plist NAME Stellar
-        source common/replace.sh Stellar.app/Contents/Info.plist VERSION "$PRODUCT-$MAJOR.$MINOR.$PATCH"
-        rm Stellar.app/Contents/Info.plist-e
+        source common/replace.sh $PROJECT.app/Contents/Info.plist INFO_STRING "$PROJECT (C) Jerboa - GPLv3"
+        source common/replace.sh $PROJECT.app/Contents/Info.plist EXE $PROJECT
+        source common/replace.sh $PROJECT.app/Contents/Info.plist ID app.jerboa.$PROJECT
+        source common/replace.sh $PROJECT.app/Contents/Info.plist NAME $PROJECT
+        source common/replace.sh $PROJECT.app/Contents/Info.plist VERSION "$PRODUCT-$MAJOR.$MINOR.$PATCH"
+        rm $PROJECT.app/Contents/Info.plist-e
 
         mkdir pkg
-        cp -r Stellar.app pkg/
+        cp -r $PROJECT.app pkg/
         cd
 
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: Stellar-macos
+        name: $PROJECT-macos
         path: pkg
 
   linuxXandroid:
@@ -200,13 +203,13 @@ jobs:
       run: |
         export GPG_TTY=$(tty)  
         cd android
-        echo "${{ secrets.KEYSTORE }}" > Stellar.jks.asc
-        gpg --pinentry-mode=loopback -d --passphrase "${{ secrets.PASS }}" Stellar.jks.asc > Stellar.jks
-        rm Stellar.prop
-        echo "storePassword=${{ secrets.PASS }}" > Stellar.prop
-        echo "keyPassword=${{ secrets.PASS }}" >> Stellar.prop
-        echo "storeFile=../Stellar.jks" >> Stellar.prop
-        echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> Stellar.prop
+        echo "${{ secrets.KEYSTORE }}" > $PROJECT.jks.asc
+        gpg --pinentry-mode=loopback -d --passphrase "${{ secrets.PASS }}" $PROJECT.jks.asc > $PROJECT.jks
+        rm $PROJECT.prop
+        echo "storePassword=${{ secrets.PASS }}" > $PROJECT.prop
+        echo "keyPassword=${{ secrets.PASS }}" >> $PROJECT.prop
+        echo "storeFile=../$PROJECT.jks" >> $PROJECT.prop
+        echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> $PROJECT.prop
         cd ..
 
     - name: android build
@@ -218,16 +221,16 @@ jobs:
         ./gradlew bundleRelease
         cd ..
         mkdir androidbuild
-        cp android/app/build/outputs/bundle/release/app-release.aab androidbuild/Stellar.aab
+        cp android/app/build/outputs/bundle/release/app-release.aab androidbuild/$PROJECT.aab
         cp LICENSE androidbuild/
         cp README.md androidbuild/ 
         cp LICENSES.md androidbuild/
-        rm android/Stellar.prop
+        rm android/$PROJECT.prop
 
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: Stellar-android
+        name: $PROJECT-android
         path: androidbuild
 
   release:
@@ -240,68 +243,68 @@ jobs:
       - name: get linux build
         uses: actions/download-artifact@v4
         with:
-          name: Stellar-linux-x86_64
+          name: $PROJECT-linux-x86_64
 
       - name: bundle linux
         run: |
-          mkdir Stellar-linux-x86_64
-          cp Stellar.* Stellar-linux-x86_64/
-          cp Stellar Stellar-linux-x86_64/
-          cp -r res Stellar-linux-x86_64/
-          cp LICENSE* Stellar-linux-x86_64/
-          cp README.md Stellar-linux-x86_64/
-          chmod +x Stellar-linux-x86_64/Stellar
-          tar -cvJf Stellar-linux-x86_64.tar.xz -C Stellar-linux-x86_64/ .
+          mkdir $PROJECT-linux-x86_64
+          cp $PROJECT.* $PROJECT-linux-x86_64/
+          cp $PROJECT $PROJECT-linux-x86_64/
+          cp -r res $PROJECT-linux-x86_64/
+          cp LICENSE* $PROJECT-linux-x86_64/
+          cp README.md $PROJECT-linux-x86_64/
+          chmod +x $PROJECT-linux-x86_64/$PROJECT
+          tar -cvJf $PROJECT-linux-x86_64.tar.xz -C $PROJECT-linux-x86_64/ .
 
       - name: get windows build
         uses: actions/download-artifact@v4
         with:
-          name: Stellar-windows
+          name: $PROJECT-windows
 
       - name: bundle windows
         run: |
-          mkdir Stellar-windows
-          cp Stellar.exe Stellar-windows/
-          cp Stellar.exe.* Stellar-windows/
-          cp *.dll Stellar-windows/
-          cp -r res Stellar-windows/
-          cp LICENSE* Stellar-windows/
-          cp README.md Stellar-windows/
-          cd Stellar-windows && zip -r ../Stellar-windows.zip . && cd ..
+          mkdir $PROJECT-windows
+          cp $PROJECT.exe $PROJECT-windows/
+          cp $PROJECT.exe.* $PROJECT-windows/
+          cp *.dll $PROJECT-windows/
+          cp -r res $PROJECT-windows/
+          cp LICENSE* $PROJECT-windows/
+          cp README.md $PROJECT-windows/
+          cd $PROJECT-windows && zip -r ../$PROJECT-windows.zip . && cd ..
 
       - name: get macos build
         uses: actions/download-artifact@v4
         with:
-          name: Stellar-macos
+          name: $PROJECT-macos
 
       - name: bundle macos
         run: |
-          chmod +x Stellar.app/Contents/MacOS/Stellar
-          tar -cvJf Stellar-macOS.tar.xz Stellar.app
+          chmod +x $PROJECT.app/Contents/MacOS/$PROJECT
+          tar -cvJf $PROJECT-macOS.tar.xz $PROJECT.app
 
       - name: get android build
         uses: actions/download-artifact@v4
         with:
-          name: Stellar-android
+          name: $PROJECT-android
 
       - name: bundle android
         run: |
-          mkdir Stellar-android
-          cp Stellar.aab Stellar-android/
-          cp LICENSE* Stellar-android/
-          cp README.md Stellar-android/
-          cd Stellar-android && zip -r ../Stellar-android.zip . && cd ..
+          mkdir $PROJECT-android
+          cp $PROJECT.aab $PROJECT-android/
+          cp LICENSE* $PROJECT-android/
+          cp README.md $PROJECT-android/
+          cd $PROJECT-android && zip -r ../$PROJECT-android.zip . && cd ..
 
       - name: release
         uses: softprops/action-gh-release@v2
         with:
           draft: true
           prerelease: true
-          name: "Stellar ${{ github.ref_name }}"
+          name: "$PROJECT ${{ github.ref_name }}"
           tag_name: ${{ github.ref }}
           files: |
-            Stellar-linux-x86_64.tar.xz
-            Stellar-windows.zip
-            Stellar-macOS.tar.xz
-            Stellar-android.zip
+            $PROJECT-linux-x86_64.tar.xz
+            $PROJECT-windows.zip
+            $PROJECT-macOS.tar.xz
+            $PROJECT-android.zip
             
