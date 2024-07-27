@@ -34,10 +34,7 @@ int main(int argv, char ** argc)
         jGL::Texture::Type::RGBA
     );
 
-    std::shared_ptr<jGL::SpriteRenderer> sprites = jGLInstance->createSpriteRenderer
-    (
-        1
-    );
+    std::shared_ptr<jGL::SpriteRenderer> sprites = jGLInstance->createSpriteRenderer(1);
 
     sprites->setProjection(camera.getVP());
 
