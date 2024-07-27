@@ -3,7 +3,6 @@
 
 #include <jGL/jGL.h>
 #include <jGL/OpenGL/openGLInstance.h>
-#include <jGL/Display/desktopDisplay.h>
 #include <jGL/orthoCam.h>
 
 #include <jLog/jLog.h>

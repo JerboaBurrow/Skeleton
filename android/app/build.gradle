@@ -1,0 +1,110 @@
+plugins {
+    id 'com.android.application'
+    id 'com.google.android.gms.oss-licenses-plugin'
+    id 'org.jetbrains.kotlin.android'
+}
+
+def propsFile = rootProject.file('app.prop')
+def props = new Properties()
+props.load(new FileInputStream(propsFile))
+
+def common=null
+if (!hasProperty('commonDir')) {
+    common="${project.projectDir.toString()}/../../common"
+}
+else
+{
+    common = commonDir
+}
+
+android {
+    compileSdk 34
+
+    signingConfigs {
+        release {
+            storeFile = file(props['storeFile'])
+            storePassword = props['storePassword']
+            keyAlias = props['keyAlias']
+            keyPassword = props['keyPassword']
+        }
+    }
+
+    defaultConfig {
+        applicationId "app.jerboa.skeleton"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "VERSION_NAME"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++17"
+                arguments "-DCOMMON_DIR=$common" //, "-DSOMETHINGELSE
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            buildConfigField("long", "TIMESTAMP", System.currentTimeMillis() + "L")
+        }
+        release {
+            signingConfig signingConfigs.release
+            buildConfigField("long", "TIMESTAMP", System.currentTimeMillis() + "L")
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion compose_compiler_version
+    }
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+    namespace 'app.jerboa.skeleton'
+    externalNativeBuild {
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+            version '3.22.1'
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation "androidx.compose.ui:ui:$compose_version"
+    implementation "androidx.compose.material:material:$compose_version"
+    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.3'
+    implementation 'androidx.activity:activity-compose:1.9.0'
+    implementation "com.google.android.gms:play-services-games-v2:20.1.2"
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
+    implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
+    implementation 'com.google.android.gms:play-services-oss-licenses:17.1.0'
+    implementation("com.google.android.play:review:2.0.1")
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    //implementation 'com.google.android.gms:play-services-ads-lite:21.5.0'
+}

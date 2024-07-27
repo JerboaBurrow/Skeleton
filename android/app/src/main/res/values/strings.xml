@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Jerboa</string>
+    <string name="app_uri">app.jerboa.skeleton</string>
+    <string name="app_prefs">app.jerboa.skeleton.prefs</string>
+    <string name="tagline">Jerboa!</string>
+    <string name="description">A skeleton Anrdoid app</string>
+    <string name="OSSprompt">Click for open Source Software we depend on! (Licenses)</string>
+    <string name="attrib">© Jerboa 2024, GPL v3.0</string>
+    <string name="rate">If you had fun, why not rate us on the Play Store? Thanks!</string>
+</resources>

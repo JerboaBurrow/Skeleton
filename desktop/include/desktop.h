@@ -2,6 +2,7 @@
 #define DESKTOP
 
 #include <common.h>
+#include <jGL/Display/desktopDisplay.h>
 
 const int resX = 800;
 const int resY = 1000;
