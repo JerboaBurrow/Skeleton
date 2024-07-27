@@ -54,5 +54,5 @@ jobs:
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: $PROJECT-linux-x86_64
+        name: ${{ env.PROJECT }}-linux-x86_64
         path: linuxbuild

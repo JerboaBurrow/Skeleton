@@ -89,5 +89,5 @@ jobs:
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: $PROJECT-macos
+        name: ${{ env.PROJECT }}-macos
         path: pkg

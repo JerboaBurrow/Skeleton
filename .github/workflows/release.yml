@@ -48,7 +48,7 @@ jobs:
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: $PROJECT-linux-x86_64
+        name: ${{ env.PROJECT }}-linux-x86_64
         path: linuxbuild
 
   linuxXwindows:
@@ -91,7 +91,7 @@ jobs:
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: $PROJECT-windows
+        name: ${{ env.PROJECT }}-windows
         path: windowsbuild
 
   macosNative:
@@ -168,7 +168,7 @@ jobs:
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: $PROJECT-macos
+        name: ${{ env.PROJECT }}-macos
         path: pkg
 
   linuxXandroid:
@@ -230,7 +230,7 @@ jobs:
     - name: buildArtifact
       uses: actions/upload-artifact@v4
       with:
-        name: $PROJECT-android
+        name: ${{ env.PROJECT }}-android
         path: androidbuild
 
   release:
@@ -243,7 +243,7 @@ jobs:
       - name: get linux build
         uses: actions/download-artifact@v4
         with:
-          name: $PROJECT-linux-x86_64
+          name: ${{ env.PROJECT }}-linux-x86_64
 
       - name: bundle linux
         run: |
@@ -259,7 +259,7 @@ jobs:
       - name: get windows build
         uses: actions/download-artifact@v4
         with:
-          name: $PROJECT-windows
+          name: ${{ env.PROJECT }}-windows
 
       - name: bundle windows
         run: |
@@ -275,7 +275,7 @@ jobs:
       - name: get macos build
         uses: actions/download-artifact@v4
         with:
-          name: $PROJECT-macos
+          name: ${{ env.PROJECT }}-macos
 
       - name: bundle macos
         run: |
@@ -285,7 +285,7 @@ jobs:
       - name: get android build
         uses: actions/download-artifact@v4
         with:
-          name: $PROJECT-android
+          name: ${{ env.PROJECT }}-android
 
       - name: bundle android
         run: |
@@ -300,11 +300,11 @@ jobs:
         with:
           draft: true
           prerelease: true
-          name: "$PROJECT ${{ github.ref_name }}"
+          name: "${{ env.PROJECT }} ${{ github.ref_name }}"
           tag_name: ${{ github.ref }}
           files: |
-            $PROJECT-linux-x86_64.tar.xz
-            $PROJECT-windows.zip
-            $PROJECT-macOS.tar.xz
-            $PROJECT-android.zip
+            ${{ env.PROJECT }}-linux-x86_64.tar.xz
+            ${{ env.PROJECT }}-windows.zip
+            ${{ env.PROJECT }}-macOS.tar.xz
+            ${{ env.PROJECT }}-android.zip
             

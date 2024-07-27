@@ -52,7 +52,6 @@ int main(int argv, char ** argc)
     );
 
     double delta = 0.0;
-
     float theta = 0.0f;
 
     while (display.isOpen())
